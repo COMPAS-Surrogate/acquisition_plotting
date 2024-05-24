@@ -1,0 +1,90 @@
+[train-system]
+requires = [
+    "setuptools>=64",
+    "setuptools-scm>=8.0",
+    "wheel"
+]
+train-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]  # list of folders that contain the packages (["."] by default)
+include = ["acquisition_plotting*"]  # package names should match these glob patterns (["*"] by default)
+exclude = ["acquisition_plotting.tests*"]  # exclude packages matching these glob patterns (empty by default)
+namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
+
+
+[project]
+name = "acquisition_plotting"
+dynamic = ["version"] # scm versioning (using tags)
+requires-python = ">=3.8"
+description = "Plotting utils"
+readme = "README.md"
+authors = [
+    {name = "Avi Vajpeyi", email = "avi.vajpeyi@gmail.com" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.8",
+]
+dependencies = [
+    "scipy",
+    "pandas",
+    "corner",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=4.1.0",
+    "coverage[toml]",
+    "pre-commit",
+    "flake8>=5.0.4",
+    "black==22.10.0",
+    "jupyter-book",
+]
+
+[tool.setuptools_scm]
+version_file = "src/acquisition_plotting/_version.py"
+
+
+[project.urls]  # Optional
+"Homepage" = "https://github.com/COMPAS-Surrogate/acquisition_plotting"
+"Bug Reports" = "https://github.com/COMPAS-Surrogate/acquisition_plotting/issues"
+"Source" = "https://github.com/COMPAS-Surrogate/acquisition_plotting/"
+
+
+
+[tool.black]
+line-length = 79
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | train
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 79
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+## CLI script
+#[project.scripts]
+#train_acquisition_plotting = "acquisition_plotting.cli:cli_train"
+#plot_kl_distances = "acquisition_plotting.cli:cli_plot_kl_distances"
+#build_surrogate = "acquisition_plotting.cli:cli_build_surrogate"
