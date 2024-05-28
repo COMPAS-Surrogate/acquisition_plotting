@@ -52,7 +52,7 @@ def check_dimension(dimension, transform=None):
     Parameters
     ----------
     dimension : Dimension
-        Search space Dimension.
+        Search trieste_space Dimension.
         Each search dimension can be defined either as
 
         - a `(lower_bound, upper_bound)` tuple (for `Real` or `Integer`
@@ -67,17 +67,17 @@ def check_dimension(dimension, transform=None):
         - For `Categorical` dimensions, the following transformations are
           supported.
 
-          - "onehot" (default) one-hot transformation of the original space.
-          - "label" integer transformation of the original space
-          - "string" string transformation of the original space.
-          - "identity" same as the original space.
+          - "onehot" (default) one-hot transformation of the original trieste_space.
+          - "label" integer transformation of the original trieste_space
+          - "string" string transformation of the original trieste_space.
+          - "identity" same as the original trieste_space.
 
         - For `Real` and `Integer` dimensions, the following transformations
           are supported.
 
-          - "identity", (default) the transformed space is the same as the
-            original space.
-          - "normalize", the transformed space is scaled to be between 0 and 1.
+          - "identity", (default) the transformed trieste_space is the same as the
+            original trieste_space.
+          - "normalize", the transformed trieste_space is scaled to be between 0 and 1.
 
     Returns
     -------
@@ -93,7 +93,7 @@ def check_dimension(dimension, transform=None):
     # A `Dimension` described by a single value is assumed to be
     # a `Categorical` dimension. This can be used in `BayesSearchCV`
     # to define subspaces that fix one value, e.g. to choose the
-    # model type, see "sklearn-gridsearchcv-replacement.py"
+    # trieste_model type, see "sklearn-gridsearchcv-replacement.py"
     # for examples.
     if len(dimension) == 1:
         return Categorical(dimension, transform=transform)
@@ -137,7 +137,7 @@ def check_dimension(dimension, transform=None):
 
 
 class Dimension(object):
-    """Base class for search space dimensions."""
+    """Base class for search trieste_space dimensions."""
 
     prior = None
 
@@ -158,12 +158,12 @@ class Dimension(object):
         return self.inverse_transform(samples)
 
     def transform(self, X):
-        """Transform samples form the original space to a warped space."""
+        """Transform samples form the original trieste_space to a warped trieste_space."""
         return self.transformer.transform(X)
 
     def inverse_transform(self, Xt):
-        """Inverse transform samples from the warped space back into the
-           original space.
+        """Inverse transform samples from the warped trieste_space back into the
+           original trieste_space.
         """
         return self.transformer.inverse_transform(Xt)
 
@@ -210,7 +210,7 @@ def _uniform_inclusive(loc=0.0, scale=1.0):
 
 
 class Real(Dimension):
-    """Search space dimension that can take on any real value.
+    """Search trieste_space dimension that can take on any real value.
 
     Parameters
     ----------
@@ -236,9 +236,9 @@ class Real(Dimension):
     transform : "identity", "normalize", optional
         The following transformations are supported.
 
-        - "identity", (default) the transformed space is the same as the
-          original space.
-        - "normalize", the transformed space is scaled to be between
+        - "identity", (default) the transformed trieste_space is the same as the
+          original trieste_space.
+        - "normalize", the transformed trieste_space is scaled to be between
           0 and 1.
 
     name : str or None
@@ -296,7 +296,7 @@ class Real(Dimension):
             raise ValueError("transform should be 'normalize' or 'identity'"
                              " got {}".format(self.transform_))
 
-        # XXX: The _rvs is for sampling in the transformed space.
+        # XXX: The _rvs is for sampling in the transformed trieste_space.
         # The rvs on Dimension calls inverse_transform on the points sampled
         # using _rvs
         if self.transform_ == "normalize":
@@ -335,8 +335,8 @@ class Real(Dimension):
             self.low, self.high, self.prior, self.transform_)
 
     def inverse_transform(self, Xt):
-        """Inverse transform samples from the warped space back into the
-           original space.
+        """Inverse transform samples from the warped trieste_space back into the
+           original trieste_space.
         """
 
         inv_transform = super(Real, self).inverse_transform(Xt)
@@ -386,12 +386,12 @@ class Real(Dimension):
         """
         if not (a in self and b in self):
             raise RuntimeError("Can only compute distance for values within "
-                               "the space, not %s and %s." % (a, b))
+                               "the trieste_space, not %s and %s." % (a, b))
         return abs(a - b)
 
 
 class Integer(Dimension):
-    """Search space dimension that can take on integer values.
+    """Search trieste_space dimension that can take on integer values.
 
     Parameters
     ----------
@@ -419,9 +419,9 @@ class Integer(Dimension):
     transform : "identity", "normalize", optional
         The following transformations are supported.
 
-        - "identity", (default) the transformed space is the same as the
-          original space.
-        - "normalize", the transformed space is scaled to be between
+        - "identity", (default) the transformed trieste_space is the same as the
+          original trieste_space.
+        - "normalize", the transformed trieste_space is scaled to be between
           0 and 1.
 
     name : str or None
@@ -520,8 +520,8 @@ class Integer(Dimension):
             self.low, self.high, self.prior, self.transform_)
 
     def inverse_transform(self, Xt):
-        """Inverse transform samples from the warped space back into the
-           original space.
+        """Inverse transform samples from the warped trieste_space back into the
+           original trieste_space.
         """
         # The concatenation of all transformed dimensions makes Xt to be
         # of type float, hence the required cast back to int.
@@ -570,12 +570,12 @@ class Integer(Dimension):
         """
         if not (a in self and b in self):
             raise RuntimeError("Can only compute distance for values within "
-                               "the space, not %s and %s." % (a, b))
+                               "the trieste_space, not %s and %s." % (a, b))
         return abs(a - b)
 
 
 class Categorical(Dimension):
-    """Search space dimension that can take on categorical values.
+    """Search trieste_space dimension that can take on categorical values.
 
     Parameters
     ----------
@@ -588,14 +588,14 @@ class Categorical(Dimension):
 
     transform : "onehot", "string", "identity", "label", default="onehot"
 
-        - "identity", the transformed space is the same as the original
-          space.
-        - "string",  the transformed space is a string encoded
-          representation of the original space.
-        - "label", the transformed space is a label encoded
-          representation (integer) of the original space.
-        - "onehot", the transformed space is a one-hot encoded
-          representation of the original space.
+        - "identity", the transformed trieste_space is the same as the original
+          trieste_space.
+        - "string",  the transformed trieste_space is a string encoded
+          representation of the original trieste_space.
+        - "label", the transformed trieste_space is a label encoded
+          representation (integer) of the original trieste_space.
+        - "onehot", the transformed trieste_space is a one-hot encoded
+          representation of the original trieste_space.
 
     name : str or None
         Name associated with dimension, e.g., "colors".
@@ -677,8 +677,8 @@ class Categorical(Dimension):
         return "Categorical(categories={}, prior={})".format(cats, prior)
 
     def inverse_transform(self, Xt):
-        """Inverse transform samples from the warped space back into the
-           original space.
+        """Inverse transform samples from the warped trieste_space back into the
+           original trieste_space.
         """
         # The concatenation of all transformed dimensions makes Xt to be
         # of type float, hence the required cast back to int.
@@ -742,17 +742,17 @@ class Categorical(Dimension):
         """
         if not (a in self and b in self):
             raise RuntimeError("Can only compute distance for values within"
-                               " the space, not {} and {}.".format(a, b))
+                               " the trieste_space, not {} and {}.".format(a, b))
         return 1 if a != b else 0
 
 
 class Space(object):
-    """Initialize a search space from given specifications.
+    """Initialize a search trieste_space from given specifications.
 
     Parameters
     ----------
     dimensions : list, shape=(n_dims,)
-        List of search space dimensions.
+        List of search trieste_space dimensions.
         Each search dimension can be defined either as
 
         - a `(lower_bound, upper_bound)` tuple (for `Real` or `Integer`
@@ -786,7 +786,7 @@ class Space(object):
     @property
     def dimension_names(self):
         """
-        Names of all the dimensions in the search-space.
+        Names of all the dimensions in the search-trieste_space.
         """
         index = 0
         names = []
@@ -833,7 +833,7 @@ class Space(object):
 
         Returns
         -------
-        space : Space
+        trieste_space : Space
            Instantiated Space object
 
         """
@@ -844,7 +844,7 @@ class Space(object):
                              'integer': Integer,
                              'categorical': Categorical}
 
-        # Extract space options for configuration file
+        # Extract trieste_space options for configuration file
         if isinstance(config, dict):
             if namespace is None:
                 options = next(iter(config.values()))
@@ -874,13 +874,13 @@ class Space(object):
     def rvs(self, n_samples=1, random_state=None):
         """Draw random samples.
 
-        The samples are in the original space. They need to be transformed
-        before being passed to a model or minimizer by `space.transform()`.
+        The samples are in the original trieste_space. They need to be transformed
+        before being passed to a trieste_model or minimizer by `trieste_space.transform()`.
 
         Parameters
         ----------
         n_samples : int, default=1
-            Number of samples to be drawn from the space.
+            Number of samples to be drawn from the trieste_space.
 
         random_state : int, RandomState instance, or None (default)
             Set random state to something other than None for reproducible
@@ -889,7 +889,7 @@ class Space(object):
         Returns
         -------
         points : list of lists, shape=(n_points, n_dims)
-           Points sampled from the space.
+           Points sampled from the trieste_space.
         """
         rng = check_random_state(random_state)
 
@@ -927,8 +927,8 @@ class Space(object):
         transform : str
            Sets all transformer of type `dim_type` to `transform`
         dim_type : type
-            Can be `skopt.space.Real`, `skopt.space.Integer` or
-             `skopt.space.Categorical`
+            Can be `skopt.trieste_space.Real`, `skopt.trieste_space.Integer` or
+             `skopt.trieste_space.Categorical`
         """
         # Transform
         for j in range(self.n_dims):
@@ -940,10 +940,10 @@ class Space(object):
         return [self.dimensions[j].transform_ for j in range(self.n_dims)]
 
     def transform(self, X):
-        """Transform samples from the original space into a warped space.
+        """Transform samples from the original trieste_space into a warped trieste_space.
 
         Note: this transformation is expected to be used to project samples
-              into a suitable space for numerical optimization.
+              into a suitable trieste_space for numerical optimization.
 
         Parameters
         ----------
@@ -974,8 +974,8 @@ class Space(object):
         return Xt
 
     def inverse_transform(self, Xt):
-        """Inverse transform samples from the warped space back to the
-           original space.
+        """Inverse transform samples from the warped trieste_space back to the
+           original trieste_space.
 
         Parameters
         ----------
@@ -1008,17 +1008,17 @@ class Space(object):
 
     @property
     def n_dims(self):
-        """The dimensionality of the original space."""
+        """The dimensionality of the original trieste_space."""
         return len(self.dimensions)
 
     @property
     def transformed_n_dims(self):
-        """The dimensionality of the warped space."""
+        """The dimensionality of the warped trieste_space."""
         return sum([dim.transformed_size for dim in self.dimensions])
 
     @property
     def bounds(self):
-        """The dimension bounds, in the original space."""
+        """The dimension bounds, in the original trieste_space."""
         b = []
 
         for dim in self.dimensions:
@@ -1030,7 +1030,7 @@ class Space(object):
         return b
 
     def __contains__(self, point):
-        """Check that `point` is within the bounds of the space."""
+        """Check that `point` is within the bounds of the trieste_space."""
         for component, dim in zip(point, self.dimensions):
             if component not in dim:
                 return False
@@ -1038,34 +1038,34 @@ class Space(object):
 
     def __getitem__(self, dimension_names):
         """
-        Lookup and return the search-space dimension with the given name.
+        Lookup and return the search-trieste_space dimension with the given name.
 
         This allows for dict-like lookup of dimensions, for example:
-        `space['foo']` returns the dimension named 'foo' if it exists,
+        `trieste_space['foo']` returns the dimension named 'foo' if it exists,
         otherwise `None` is returned.
 
         It also allows for lookup of a list of dimension-names, for example:
-        `space[['foo', 'bar']]` returns the two dimensions named
+        `trieste_space[['foo', 'bar']]` returns the two dimensions named
         'foo' and 'bar' if they exist.
 
         Parameters
         ----------
         dimension_names : str or list(str)
-            Name of a single search-space dimension (str).
-            List of names for search-space dimensions (list(str)).
+            Name of a single search-trieste_space dimension (str).
+            List of names for search-trieste_space dimensions (list(str)).
 
         Returns
         -------
         dims tuple (index, Dimension), list(tuple(index, Dimension)), \
                 (None, None)
-            A single search-space dimension with the given name,
-            or a list of search-space dimensions with the given names.
+            A single search-trieste_space dimension with the given name,
+            or a list of search-trieste_space dimensions with the given names.
         """
 
         def _get(dimension_name):
             """Helper-function for getting a single dimension."""
             index = 0
-            # Get the index of the search-space dimension using its name.
+            # Get the index of the search-trieste_space dimension using its name.
             for dim in self.dimensions:
                 if dimension_name == dim.name:
                     return (index, dim)
@@ -1075,10 +1075,10 @@ class Space(object):
             return (None, None)
 
         if isinstance(dimension_names, (str, int)):
-            # Get a single search-space dimension.
+            # Get a single search-trieste_space dimension.
             dims = _get(dimension_name=dimension_names)
         elif isinstance(dimension_names, (list, tuple)):
-            # Get a list of search-space dimensions.
+            # Get a list of search-trieste_space dimensions.
             # Note that we do not check whether the names are really strings.
             dims = [_get(dimension_name=name) for name in dimension_names]
         else:
@@ -1090,7 +1090,7 @@ class Space(object):
 
     @property
     def transformed_bounds(self):
-        """The dimension bounds, in the warped space."""
+        """The dimension bounds, in the warped trieste_space."""
         b = []
 
         for dim in self.dimensions:
@@ -1123,7 +1123,7 @@ class Space(object):
         return n
 
     def distance(self, point_a, point_b):
-        """Compute distance between two points in this space.
+        """Compute distance between two points in this trieste_space.
 
         Parameters
         ----------

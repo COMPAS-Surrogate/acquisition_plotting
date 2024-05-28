@@ -3,131 +3,32 @@ from typing import Dict
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import OptimizeResult as SciPyOptimizeResult
-from skopt.plots import plot_evaluations as skopt_plot_evaluations
-from skopt.plots import plot_objective as skopt_plot_objective
-from skopt.space import Space
-from trieste.models import ProbabilisticModel
-from trieste.space import SearchSpace
+from .space import Space, Real
 
 
-def _make_scipy_result(x, y, space: SearchSpace, model: ProbabilisticModel):
-    """
-    Create a SciPyOptimizeResult object from the given y_pts and model.
-    """
-    bounds = Space(
-        [
-            (space.lower[i].numpy(), space.upper[i].numpy())
-            for i in range(space.dimension.numpy())
-        ]
-    )
-    min_idx = np.argmin(y)
-    return SciPyOptimizeResult(
-        dict(
-            fun=y[min_idx],
-            x=x[min_idx],
-            success=True,
-            func_vals=y,
-            x_iters=x,
-            models=[model],
-            space=bounds,
-        )
-    )
+import sys
+import numpy as np
+from itertools import count
+from functools import partial
+from scipy.optimize import OptimizeResult
+
+from .space import Categorical
+from collections import Counter
+
+# For plot tests, matplotlib must be set to headless mode early
+if 'pytest' in sys.modules:
+    import matplotlib
+
+    matplotlib.use('Agg')
+
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import cm
+from matplotlib.ticker import LogLocator
+from matplotlib.ticker import MaxNLocator, FuncFormatter  # noqa: E402
 
 
-def plot_model_partial_dependence(
-    in_pts,
-    out_pts,
-    model,
-    search_space: SearchSpace,
-    truth: Dict = None,
-    **kwargs
-) -> plt.Figure:
-    """
-    Plot the evaluation matrix --> a corner plot of the parameters,
-    colored by the order in which they were evaluated.
-    """
-    labels, truths = _get_param_labels(truth)
-    truths = truths if truths is not None else "result"
-    res = _make_scipy_result(in_pts, out_pts, search_space, model)
-
-    ax = skopt_plot_objective(
-        res,
-        dimensions=labels,
-        minimum=truths,
-        n_points=kwargs.get("n_points", 50),
-        n_samples=kwargs.get("n_samples", 500),
-        levels=kwargs.get("levels", 10),
-        sample_source=kwargs.get("sample_source", "minimum"),
-        zscale=kwargs.get("zscale", "linear"),
-        **kwargs
-    )
-    return _get_fig(ax)
 
 
-def plot_evaluations(
-    in_pts,
-    out_pts,
-    model,
-    search_space: SearchSpace,
-    truth: Dict = None,
-    **kwargs
-) -> plt.Figure:
-    """
-    Plot the evaluation matrix --> a corner plot of the parameters,
-    colored by the order in which they were evaluated.
-    """
-    labels, tru_vals = _get_param_labels(truth)
-    # add truth to in_pts and out_pts
-    # if truth:
-    #     in_pts = np.vstack([in_pts, tru_vals])
-    #     out_pts = np.append(out_pts, truth['lnl'])
-    res = _make_scipy_result(in_pts, out_pts, search_space, model)
-    ax = skopt_plot_evaluations(
-        res,
-        dimensions=labels,
-        bins=kwargs.get("bins", 20),
-        plot_dims=kwargs.get("plot_dims", None),
-    )
-    fig = _get_fig(ax)
-    if truth:
-        n_dims = in_pts.shape[1]
-        # t_vals = np.array([tru_vals])
-        # overplot_lines(fig, t_vals, color="tab:orange")
-        # overplot_points(
-        #     fig,
-        #     [[np.nan if t is None else t for t in t_vals]],
-        #     marker="s",
-        #     color="tab:orange"
-        # )
-        for i in range(n_dims):
-            for j in range(n_dims):
-                if i == j:  # diagonal
-                    if n_dims == 1:
-                        ax_ = ax
-                    else:
-                        ax_ = ax[i, i]
-                    ax_.vlines(
-                        tru_vals[i], *ax_.get_ylim(), color="tab:orange"
-                    )
-                # lower triangle
-                elif i > j:
-                    ax_ = ax[i, j]
-                    ax_.vlines(
-                        tru_vals[j], *ax_.get_ylim(), color="tab:orange"
-                    )
-                    ax_.hlines(
-                        tru_vals[i], *ax_.get_xlim(), color="tab:orange"
-                    )
-                    ax_.scatter(
-                        tru_vals[j],
-                        tru_vals[i],
-                        c="tab:orange",
-                        s=50,
-                        lw=0.0,
-                        marker="s",
-                    )
-
-    return fig
 
 
 def _get_param_labels(truths):
@@ -146,3 +47,215 @@ def _get_fig(ax):
     else:
         fig = ax.get_figure()
     return fig
+
+
+
+
+def _format_scatter_plot_axes(ax, space, ylabel, plot_dims,
+                              dim_labels=None):
+    # Work out min, max of y axis for the diagonal so we can adjust
+    # them all to the same value
+    diagonal_ylim = _get_ylim_diagonal(ax)
+
+    # Number of search-trieste_space dimensions we are using.
+    if isinstance(ax, (list, np.ndarray)):
+        n_dims = len(plot_dims)
+    else:
+        n_dims = 1
+
+    if dim_labels is None:
+        dim_labels = ["$X_{%i}$" % i if d.name is None else d.name
+                      for i, d in plot_dims]
+    # Axes for categorical dimensions are really integers; we have to
+    # label them with the category names
+    iscat = [isinstance(dim[1], Categorical) for dim in plot_dims]
+
+    # Deal with formatting of the axes
+    for i in range(n_dims):  # rows
+        for j in range(n_dims):  # columns
+            if n_dims > 1:
+                ax_ = ax[i, j]
+            else:
+                ax_ = ax
+            index_i, dim_i = plot_dims[i]
+            index_j, dim_j = plot_dims[j]
+            if j > i:
+                ax_.axis("off")
+            elif i > j:  # off-diagonal plots
+                # plots on the diagonal are special, like Texas. They have
+                # their own range so do not mess with them.
+                if not iscat[i]:  # bounds not meaningful for categoricals
+                    ax_.set_ylim(*dim_i.bounds)
+                if iscat[j]:
+                    # partial() avoids creating closures in a loop
+                    ax_.xaxis.set_major_formatter(FuncFormatter(
+                        partial(_cat_format, dim_j)))
+                else:
+                    ax_.set_xlim(*dim_j.bounds)
+                if j == 0:  # only leftmost column (0) gets y labels
+                    ax_.set_ylabel(dim_labels[i])
+                    if iscat[i]:  # Set category labels for left column
+                        ax_.yaxis.set_major_formatter(FuncFormatter(
+                            partial(_cat_format, dim_i)))
+                else:
+                    ax_.set_yticklabels([])
+
+                # for all rows except ...
+                if i < n_dims - 1:
+                    ax_.set_xticklabels([])
+                # ... the bottom row
+                else:
+                    [l.set_rotation(45) for l in ax_.get_xticklabels()]
+                    ax_.set_xlabel(dim_labels[j])
+
+                # configure plot for linear vs log-scale
+                if dim_j.prior == 'log-uniform':
+                    ax_.set_xscale('log')
+                else:
+                    ax_.xaxis.set_major_locator(MaxNLocator(6, prune='both',
+                                                            integer=iscat[j]))
+
+                if dim_i.prior == 'log-uniform':
+                    ax_.set_yscale('log')
+                else:
+                    ax_.yaxis.set_major_locator(MaxNLocator(6, prune='both',
+                                                            integer=iscat[i]))
+
+            else:  # diagonal plots
+                ax_.set_ylim(*diagonal_ylim)
+                if not iscat[i]:
+                    low, high = dim_i.bounds
+                    ax_.set_xlim(low, high)
+                ax_.yaxis.tick_right()
+                ax_.yaxis.set_label_position('right')
+                ax_.yaxis.set_ticks_position('both')
+                ax_.set_ylabel(ylabel)
+
+                ax_.xaxis.tick_top()
+                ax_.xaxis.set_label_position('top')
+                ax_.set_xlabel(dim_labels[j])
+
+                if dim_i.prior == 'log-uniform':
+                    ax_.set_xscale('log')
+                else:
+                    ax_.xaxis.set_major_locator(MaxNLocator(6, prune='both',
+                                                            integer=iscat[i]))
+                    if iscat[i]:
+                        ax_.xaxis.set_major_formatter(FuncFormatter(
+                            partial(_cat_format, dim_i)))
+
+    return ax
+
+
+
+
+def _map_categories(space, points, minimum):
+    """
+    Map categorical values to integers in a set of points.
+
+    Returns
+    -------
+    mapped_points : np.array, shape=points.shape
+        A copy of `points` with categoricals replaced with their indices in
+        the corresponding `Dimension`.
+
+    mapped_minimum : np.array, shape (trieste_space.n_dims,)
+        A copy of `minimum` with categoricals replaced with their indices in
+        the corresponding `Dimension`.
+
+    iscat : np.array, shape (trieste_space.n_dims,)
+       Boolean array indicating whether dimension `i` in the `trieste_space` is
+       categorical.
+    """
+    points = np.asarray(points, dtype=object)  # Allow slicing, preserve cats
+    iscat = np.repeat(False, space.n_dims)
+    min_ = np.zeros(space.n_dims)
+    pts_ = np.zeros(points.shape)
+    for i, dim in enumerate(space.dimensions):
+        if isinstance(dim, Categorical):
+            iscat[i] = True
+            catmap = dict(zip(dim.categories, count()))
+            pts_[:, i] = [catmap[cat] for cat in points[:, i]]
+            min_[i] = catmap[minimum[i]]
+        else:
+            pts_[:, i] = points[:, i]
+            min_[i] = minimum[i]
+    return pts_, min_, iscat
+
+
+def _evenly_sample(dim, n_points):
+    """Return `n_points` evenly spaced points from a Dimension.
+
+    Parameters
+    ----------
+    dim : `Dimension`
+        The Dimension to sample from.  Can be categorical; evenly-spaced
+        category indices are chosen in order without replacement (result
+        may be smaller than `n_points`).
+
+    n_points : int
+        The number of points to sample from `dim`.
+
+    Returns
+    -------
+    xi : np.array
+        The sampled points in the Dimension.  For Categorical
+        dimensions, returns the index of the value in
+        `dim.categories`.
+
+    xi_transformed : np.array
+        The transformed values of `xi`, for feeding to a trieste_model.
+    """
+    cats = np.array(getattr(dim, 'categories', []), dtype=object)
+    if len(cats):  # Sample categoricals while maintaining order
+        xi = np.linspace(0, len(cats) - 1, min(len(cats), n_points),
+                         dtype=int)
+        xi_transformed = dim.transform(cats[xi])
+    else:
+        bounds = dim.bounds
+        # XXX use linspace(*bounds, n_points) after python2 support ends
+        xi = np.linspace(bounds[0], bounds[1], n_points)
+        xi_transformed = dim.transform(xi)
+    return xi, xi_transformed
+
+
+def _cat_format(dimension, x, _):
+    """Categorical axis tick formatter function.  Returns the name of category
+    `x` in `dimension`.  Used with `matplotlib.ticker.FuncFormatter`."""
+    return str(dimension.categories[int(x)])
+
+
+def _get_ylim_diagonal(ax):
+    """Get the min / max of the ylim for all diagonal plots.
+    This is used in _adjust_fig() so the ylim is the same
+    for all diagonal plots.
+
+    Parameters
+    ----------
+    ax : `Matplotlib.Axes`
+        2-dimensional matrix with Matplotlib Axes objects.
+
+    Returns
+    -------
+    ylim_diagonal : tuple(int)
+        The common min and max ylim for the diagonal plots.
+
+    """
+
+    # Number of search-trieste_space dimensions used in this plot.
+    if isinstance(ax, (list, np.ndarray)):
+        n_dims = len(ax)
+        # Get ylim for all diagonal plots.
+        ylim = [ax[row, row].get_ylim() for row in range(n_dims)]
+    else:
+        n_dim = 1
+        ylim = [ax.get_ylim()]
+
+    # Separate into two lists with low and high ylim.
+    ylim_lo, ylim_hi = zip(*ylim)
+
+    # Min and max ylim for all diagonal plots.
+    ylim_min = np.min(ylim_lo)
+    ylim_max = np.max(ylim_hi)
+
+    return ylim_min, ylim_max
