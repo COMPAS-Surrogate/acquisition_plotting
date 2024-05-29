@@ -12,7 +12,6 @@ __copyright__ = "Copyright 2022 project_name developers"
 __contributors__ = f"{URL}/graphs/contributors"
 
 
-from .plot_objective import plot_objective
 from .plot_evaluations import plot_evaluations
-from .trieste import plot_trieste_objective
-from .trieste import plot_trieste_evaluations
+from .plot_objective import plot_objective
+from .trieste import plot_trieste_evaluations, plot_trieste_objective

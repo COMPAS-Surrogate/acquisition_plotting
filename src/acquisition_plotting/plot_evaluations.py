@@ -1,37 +1,56 @@
 # -*- encoding: UTF-8 -*-
 """Plotting functions."""
 import sys
-import numpy as np
-from itertools import count
+from collections import Counter
 from functools import partial
+from itertools import count
+
+import numpy as np
 from scipy.optimize import OptimizeResult
+
 from .utils import _get_fig
 
-
-from collections import Counter
-
 # For plot tests, matplotlib must be set to headless mode early
-if 'pytest' in sys.modules:
+if "pytest" in sys.modules:
     import matplotlib
 
-    matplotlib.use('Agg')
+    matplotlib.use("Agg")
+
+from typing import Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
-from matplotlib.ticker import LogLocator
-from matplotlib.ticker import MaxNLocator, FuncFormatter  # noqa: E402
-from .utils import _format_scatter_plot_axes, _map_categories
+from matplotlib.ticker import (  # noqa: E402
+    FuncFormatter,
+    LogLocator,
+    MaxNLocator,
+)
+
+from .utils import (
+    _add_truths,
+    _format_scatter_plot_axes,
+    _get_dim_names,
+    _map_categories,
+_add_legend
+)
 
 
-
-def plot_evaluations(result:OptimizeResult, bins=20, dimensions=None, plot_dims=None):
+def plot_evaluations(
+    result: OptimizeResult,
+    bins=20,
+    dim_labels=None,
+    truths: List = None,
+    cmap="viridis",
+    truth_color: str = "tab:orange",
+    minima_color: str = "tab:red",
+) -> Tuple[plt.Figure, plt.Axes]:
     """Visualize the order in which points were sampled during optimization.
 
     This creates a 2-d matrix plot where the diagonal plots are histograms
     that show the distribution of samples for each search-trieste_space dimension.
 
     The plots below the diagonal are scatter-plots of the samples for
-    all combinations of search-trieste_space dimensions.
+    all combinations of search-trieste_space dim_labels.
 
     The order in which samples
     were evaluated is encoded in each point's color.
@@ -46,15 +65,15 @@ def plot_evaluations(result:OptimizeResult, bins=20, dimensions=None, plot_dims=
     bins : int, bins=20
         Number of bins to use for histograms on the diagonal.
 
-    dimensions : list of str, default=None
+    dim_labels : list of str, default=None
         Labels of the dimension
-        variables. `None` defaults to `trieste_space.dimensions[i].name`, or
+        variables. `None` defaults to `trieste_space.dim_labels[i].name`, or
         if also `None` to `['X_0', 'X_1', ..]`.
 
     plot_dims : list of str and int, default=None
         List of dimension names or dimension indices from the
-        search-space dimensions to be included in the plot.
-        If `None` then use all dimensions except constant ones
+        search-space dim_labels to be included in the plot.
+        If `None` then use all dim_labels except constant ones
         from the search-trieste_space.
 
     Returns
@@ -71,25 +90,14 @@ def plot_evaluations(result:OptimizeResult, bins=20, dimensions=None, plot_dims=
     samples, minimum, iscat = _map_categories(space, result.x_iters, result.x)
     order = range(samples.shape[0])
 
-    if plot_dims is None:
-        # Get all dimensions.
-        plot_dims = []
-        for row in range(space.n_dims):
-            if space.dimensions[row].is_constant:
-                continue
-            plot_dims.append((row, space.dimensions[row]))
-    else:
-        plot_dims = space[plot_dims]
-    # Number of search-trieste_space dimensions we are using.
+    plot_dims = _get_dim_names(space)
     n_dims = len(plot_dims)
-    if dimensions is not None:
-        assert len(dimensions) == n_dims
 
-    fig, ax = plt.subplots(n_dims, n_dims,
-                           figsize=(2 * n_dims, 2 * n_dims))
+    fig, ax = plt.subplots(n_dims, n_dims, figsize=(2 * n_dims, 2 * n_dims))
 
-    fig.subplots_adjust(left=0.05, right=0.95, bottom=0.05, top=0.95,
-                        hspace=0.1, wspace=0.1)
+    fig.subplots_adjust(
+        left=0.05, right=0.95, bottom=0.05, top=0.95, hspace=0.1, wspace=0.1
+    )
 
     for i in range(n_dims):
         for j in range(n_dims):
@@ -97,7 +105,7 @@ def plot_evaluations(result:OptimizeResult, bins=20, dimensions=None, plot_dims=
                 index, dim = plot_dims[i]
                 if iscat[j]:
                     bins_ = len(dim.categories)
-                elif dim.prior == 'log-uniform':
+                elif dim.prior == "log-uniform":
                     low, high = space.bounds[index]
                     bins_ = np.logspace(np.log10(low), np.log10(high), bins)
                 else:
@@ -106,21 +114,39 @@ def plot_evaluations(result:OptimizeResult, bins=20, dimensions=None, plot_dims=
                     ax_ = ax
                 else:
                     ax_ = ax[i, i]
-                ax_.hist(samples[:, index], bins=bins_,
-                         range=None if iscat[j] else dim.bounds)
+                ax_.hist(
+                    samples[:, index],
+                    bins=bins_,
+                    range=None if iscat[j] else dim.bounds,
+                )
 
             # lower triangle
             elif i > j:
                 index_i, dim_i = plot_dims[i]
                 index_j, dim_j = plot_dims[j]
                 ax_ = ax[i, j]
-                ax_.scatter(samples[:, index_j], samples[:, index_i],
-                            c=order, s=40, lw=0., cmap='viridis')
-                ax_.scatter(minimum[index_j], minimum[index_i],
-                            c=['r'], s=100, lw=0., marker='*')
+                ax_.scatter(
+                    samples[:, index_j],
+                    samples[:, index_i],
+                    c=order,
+                    s=40,
+                    lw=0.0,
+                    cmap=cmap,
+                )
+                ax_.scatter(
+                    minimum[index_j],
+                    minimum[index_i],
+                    c=[minima_color],
+                    s=100,
+                    lw=0.0,
+                    marker="*",
+                )
 
-    # Make various adjustments to the plots.
-    return _get_fig(_format_scatter_plot_axes(ax, space, ylabel="Number of samples",
-                                     plot_dims=plot_dims,
-                                     dim_labels=dimensions))
+    # make adjustments to the plot
+    ax = _format_scatter_plot_axes(ax, plot_dims, dim_labels)
+    if truths:
+        ax = _add_truths(ax, truths, truth_color)
+    ax = _add_legend(ax, minima_color, truths, truth_color)
 
+    fig = _get_fig(ax)
+    return fig, ax

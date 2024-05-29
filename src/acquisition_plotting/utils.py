@@ -1,34 +1,32 @@
+import sys
+from collections import Counter
+from functools import partial
+from itertools import count
 from typing import Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.optimize import OptimizeResult as SciPyOptimizeResult
-from .space import Space, Real
-
-
-import sys
-import numpy as np
-from itertools import count
-from functools import partial
+from matplotlib.patches import Patch
 from scipy.optimize import OptimizeResult
+from scipy.optimize import OptimizeResult as SciPyOptimizeResult
 
-from .space import Categorical
-from collections import Counter
+from .space import Categorical, Real, Space
 
 # For plot tests, matplotlib must be set to headless mode early
-if 'pytest' in sys.modules:
+if "pytest" in sys.modules:
     import matplotlib
 
-    matplotlib.use('Agg')
+    matplotlib.use("Agg")
+
+from typing import Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
-from matplotlib.ticker import LogLocator
-from matplotlib.ticker import MaxNLocator, FuncFormatter  # noqa: E402
-
-
-
-
+from matplotlib.ticker import (  # noqa: E402
+    FuncFormatter,
+    LogLocator,
+    MaxNLocator,
+)
 
 
 def _get_param_labels(truths):
@@ -49,24 +47,21 @@ def _get_fig(ax):
     return fig
 
 
+def _format_scatter_plot_axes(ax, plot_dims, dim_labels=None):
+    if isinstance(ax, (list, np.ndarray)):
+        n_dims, _ = ax.shape
+    else:
+        n_dims = 1
 
-
-def _format_scatter_plot_axes(ax, space, ylabel, plot_dims,
-                              dim_labels=None):
     # Work out min, max of y axis for the diagonal so we can adjust
     # them all to the same value
     diagonal_ylim = _get_ylim_diagonal(ax)
 
-    # Number of search-trieste_space dimensions we are using.
-    if isinstance(ax, (list, np.ndarray)):
-        n_dims = len(plot_dims)
-    else:
-        n_dims = 1
-
     if dim_labels is None:
-        dim_labels = ["$X_{%i}$" % i if d.name is None else d.name
-                      for i, d in plot_dims]
-    # Axes for categorical dimensions are really integers; we have to
+        dim_labels = [
+            "$X_{%i}$" % i if d.name is None else d.name for i, d in plot_dims
+        ]
+    # Axes for categorical dim_labels are really integers; we have to
     # label them with the category names
     iscat = [isinstance(dim[1], Categorical) for dim in plot_dims]
 
@@ -88,15 +83,17 @@ def _format_scatter_plot_axes(ax, space, ylabel, plot_dims,
                     ax_.set_ylim(*dim_i.bounds)
                 if iscat[j]:
                     # partial() avoids creating closures in a loop
-                    ax_.xaxis.set_major_formatter(FuncFormatter(
-                        partial(_cat_format, dim_j)))
+                    ax_.xaxis.set_major_formatter(
+                        FuncFormatter(partial(_cat_format, dim_j))
+                    )
                 else:
                     ax_.set_xlim(*dim_j.bounds)
                 if j == 0:  # only leftmost column (0) gets y labels
                     ax_.set_ylabel(dim_labels[i])
                     if iscat[i]:  # Set category labels for left column
-                        ax_.yaxis.set_major_formatter(FuncFormatter(
-                            partial(_cat_format, dim_i)))
+                        ax_.yaxis.set_major_formatter(
+                            FuncFormatter(partial(_cat_format, dim_i))
+                        )
                 else:
                     ax_.set_yticklabels([])
 
@@ -109,17 +106,19 @@ def _format_scatter_plot_axes(ax, space, ylabel, plot_dims,
                     ax_.set_xlabel(dim_labels[j])
 
                 # configure plot for linear vs log-scale
-                if dim_j.prior == 'log-uniform':
-                    ax_.set_xscale('log')
+                if dim_j.prior == "log-uniform":
+                    ax_.set_xscale("log")
                 else:
-                    ax_.xaxis.set_major_locator(MaxNLocator(6, prune='both',
-                                                            integer=iscat[j]))
+                    ax_.xaxis.set_major_locator(
+                        MaxNLocator(6, prune="both", integer=iscat[j])
+                    )
 
-                if dim_i.prior == 'log-uniform':
-                    ax_.set_yscale('log')
+                if dim_i.prior == "log-uniform":
+                    ax_.set_yscale("log")
                 else:
-                    ax_.yaxis.set_major_locator(MaxNLocator(6, prune='both',
-                                                            integer=iscat[i]))
+                    ax_.yaxis.set_major_locator(
+                        MaxNLocator(6, prune="both", integer=iscat[i])
+                    )
 
             else:  # diagonal plots
                 ax_.set_ylim(*diagonal_ylim)
@@ -127,26 +126,28 @@ def _format_scatter_plot_axes(ax, space, ylabel, plot_dims,
                     low, high = dim_i.bounds
                     ax_.set_xlim(low, high)
                 ax_.yaxis.tick_right()
-                ax_.yaxis.set_label_position('right')
-                ax_.yaxis.set_ticks_position('both')
-                ax_.set_ylabel(ylabel)
+
+                # remove yticks labels and ticks
+                ax_.set_yticklabels([])
+                ax_.yaxis.set_ticks_position("none")
+                ax_.set_ylabel("")
 
                 ax_.xaxis.tick_top()
-                ax_.xaxis.set_label_position('top')
+                ax_.xaxis.set_label_position("top")
                 ax_.set_xlabel(dim_labels[j])
 
-                if dim_i.prior == 'log-uniform':
-                    ax_.set_xscale('log')
+                if dim_i.prior == "log-uniform":
+                    ax_.set_xscale("log")
                 else:
-                    ax_.xaxis.set_major_locator(MaxNLocator(6, prune='both',
-                                                            integer=iscat[i]))
+                    ax_.xaxis.set_major_locator(
+                        MaxNLocator(6, prune="both", integer=iscat[i])
+                    )
                     if iscat[i]:
-                        ax_.xaxis.set_major_formatter(FuncFormatter(
-                            partial(_cat_format, dim_i)))
+                        ax_.xaxis.set_major_formatter(
+                            FuncFormatter(partial(_cat_format, dim_i))
+                        )
 
     return ax
-
-
 
 
 def _map_categories(space, points, minimum):
@@ -200,16 +201,15 @@ def _evenly_sample(dim, n_points):
     -------
     xi : np.array
         The sampled points in the Dimension.  For Categorical
-        dimensions, returns the index of the value in
+        dim_labels, returns the index of the value in
         `dim.categories`.
 
     xi_transformed : np.array
         The transformed values of `xi`, for feeding to a trieste_model.
     """
-    cats = np.array(getattr(dim, 'categories', []), dtype=object)
+    cats = np.array(getattr(dim, "categories", []), dtype=object)
     if len(cats):  # Sample categoricals while maintaining order
-        xi = np.linspace(0, len(cats) - 1, min(len(cats), n_points),
-                         dtype=int)
+        xi = np.linspace(0, len(cats) - 1, min(len(cats), n_points), dtype=int)
         xi_transformed = dim.transform(cats[xi])
     else:
         bounds = dim.bounds
@@ -242,7 +242,7 @@ def _get_ylim_diagonal(ax):
 
     """
 
-    # Number of search-trieste_space dimensions used in this plot.
+    # Number of search-trieste_space dim_labels used in this plot.
     if isinstance(ax, (list, np.ndarray)):
         n_dims = len(ax)
         # Get ylim for all diagonal plots.
@@ -259,3 +259,46 @@ def _get_ylim_diagonal(ax):
     ylim_max = np.max(ylim_hi)
 
     return ylim_min, ylim_max
+
+def _add_truths(ax, truths: List, color: str = "tab:orange"):
+    n_dims = len(truths)
+
+    for i in range(n_dims):
+        for j in range(n_dims):
+            # diagonal
+            if i == j:
+                ax_ = ax if n_dims == 1 else ax[i, i]
+                ax_.vlines(truths[i], *ax_.get_ylim(), color=color)
+            # lower triangle
+            elif i > j:
+                ax_ = ax[i, j]
+                ax_.vlines(truths[j], *ax_.get_ylim(), color=color)
+                ax_.hlines(truths[i], *ax_.get_xlim(), color=color)
+                ax_.scatter(
+                    truths[j],
+                    truths[i],
+                    c="tab:orange",
+                    s=50,
+                    lw=0.0,
+                    marker="s",
+                )
+
+    return ax
+
+
+def _get_dim_names(space) -> List[Tuple[int, str]]:
+    plot_dims = []
+    for row in range(space.n_dims):
+        if space.dimensions[row].is_constant:
+            continue
+        plot_dims.append((row, space.dimensions[row]))
+    return plot_dims
+
+
+def _add_legend(ax, minima_color, truths, truth_color):
+    # create custom legend for minima and truths
+    handles = [Patch(facecolor=minima_color, label="Min Acquired Pt")]
+    if truths:
+        handles.append(Patch(facecolor=truth_color, label="Truth"))
+    _get_fig(ax).legend(handles=handles, loc="upper right", frameon=False)
+    return ax
