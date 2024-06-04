@@ -15,7 +15,7 @@ def plot_trieste_objective(
     out_pts,
     trieste_model,
     trieste_space,
-    truth: Dict[str, float] = None,
+    truths: Dict[str, float] = None,
     dim_labels=None,
     **kwargs,
 ) -> plt.Figure:
@@ -23,32 +23,35 @@ def plot_trieste_objective(
     Plot the evaluation matrix --> a corner plot of the parameters,
     colored by the order in which they were evaluated.
     """
-    labels, truths = _get_param_labels(truth)
+    labels, true_vals = _get_param_labels(truths)
     dim_labels = dim_labels or labels
     res = _trieste_to_scipy_res(
         in_pts, out_pts, trieste_space, trieste_model, labels
     )
 
-    fig = plot_objective(
+    kwgs = kwargs.copy()
+    kwgs["n_points"] = kwgs.get("n_points", 50)
+    kwgs["n_samples"] = kwgs.get("n_samples", 50)
+    kwgs["levels"] = kwgs.get("levels", 10)
+    kwgs["zscale"] = kwgs.get("zscale", "linear")
+    kwgs['truths'] = kwgs.get('truths', true_vals)
+
+    fig, _ = plot_objective(
         res,
         dim_labels=dim_labels,
-        n_points=kwargs.get("n_points", 50),
-        n_samples=kwargs.get("n_samples", 50),
-        levels=kwargs.get("levels", 10),
-        zscale=kwargs.get("zscale", "linear"),
-        **kwargs,
+        **kwgs,
     )
     return fig
 
 
 def plot_trieste_evaluations(
-    in_pts, out_pts, trieste_model, trieste_space, truth: Dict = None, dim_labels=None, **kwargs
+    in_pts, out_pts, trieste_model, trieste_space, truths: Dict = None, dim_labels=None, **kwargs
 ) -> plt.Figure:
     """
     Plot the evaluation matrix --> a corner plot of the parameters,
     colored by the order in which they were evaluated.
     """
-    labels, true_vals = _get_param_labels(truth)
+    labels, true_vals = _get_param_labels(truths)
     dim_labels = dim_labels or labels
     res = _trieste_to_scipy_res(
         in_pts, out_pts, trieste_space, trieste_model, labels

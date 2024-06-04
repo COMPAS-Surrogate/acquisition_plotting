@@ -49,6 +49,7 @@ def plot_objective(
         truths: List = None,
         truth_color: str = "tab:orange",
         minima_color: str = "tab:red",
+        **kwargs,
 ) -> Tuple[plt.Figure, plt.Axes]:
     """Plot a 2-d matrix with so-called Partial Dependence plots
         of the objective function. This shows the influence of each
@@ -170,9 +171,13 @@ def plot_objective(
     samples = space.transform(space.rvs(n_samples=n_samples))
 
     x_samples, minimum, _ = _map_categories(space, result.x_iters, x_vals)
+    zvmin, zvmax = result.func_vals.min(), result.func_vals.max()
+
 
     if zscale == "log":
         locator = LogLocator()
+        zvmin = np.nanmin(np.log(result.func_vals))
+        zvmax = np.nanmax(np.log(result.func_vals))
     elif zscale == "linear":
         locator = None
     else:
@@ -188,10 +193,10 @@ def plot_objective(
     fig.subplots_adjust(
         left=0.05, right=0.95, bottom=0.05, top=0.95, hspace=0.1, wspace=0.1
     )
-
+    cbar = None
     for i in range(n_dims):
         for j in range(n_dims):
-            if i == j:
+            if i == j: # diagonal
                 index, dim = plot_dims[i]
                 xi, yi = _partial_dependence_1D(
                     space,
@@ -217,7 +222,11 @@ def plot_objective(
                 xi, yi, zi = _partial_dependence_2D(
                     space, result.models[-1], index1, index2, samples, n_points
                 )
-                ax_.contourf(xi, yi, zi, levels, locator=locator, cmap=cmap)
+                cbar = ax_.contourf(
+                    xi, yi, zi, levels,
+                    locator=locator, cmap=cmap,
+                    vmin=zvmin, vmax=zvmax
+                )
                 if show_points:
                     ax_.scatter(
                         x_samples[:, index2],
@@ -243,6 +252,14 @@ def plot_objective(
     # Custom legend for the plot.
     ax = _add_legend(ax, minima_color, truths, truth_color)
     fig = _get_fig(ax)
+
+    # add cbar above last ax
+    if cbar:
+        cax = fig.colorbar(cbar, ax=ax[0, 1:], shrink=0.8, orientation='horizontal', location='top',)
+        cax.set_label('Surrogate Model Mean')
+
+
+
     return fig, ax
 
 

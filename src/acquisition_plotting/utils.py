@@ -300,5 +300,12 @@ def _add_legend(ax, minima_color, truths, truth_color):
     handles = [Patch(facecolor=minima_color, label="Min Acquired Pt")]
     if truths:
         handles.append(Patch(facecolor=truth_color, label="Truth"))
-    _get_fig(ax).legend(handles=handles, loc="upper right", frameon=False)
+
+    # pad the legend up slightly
+    ax[0, -1].legend(
+        handles=handles,
+        loc="lower left",
+        frameon=False,
+        bbox_to_anchor=(0, 0.1),
+    )
     return ax

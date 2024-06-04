@@ -43,6 +43,7 @@ def plot_evaluations(
     cmap="viridis",
     truth_color: str = "tab:orange",
     minima_color: str = "tab:red",
+    **kwargs,
 ) -> Tuple[plt.Figure, plt.Axes]:
     """Visualize the order in which points were sampled during optimization.
 
@@ -99,6 +100,7 @@ def plot_evaluations(
         left=0.05, right=0.95, bottom=0.05, top=0.95, hspace=0.1, wspace=0.1
     )
 
+    cbar = None
     for i in range(n_dims):
         for j in range(n_dims):
             if i == j:
@@ -119,13 +121,16 @@ def plot_evaluations(
                     bins=bins_,
                     range=None if iscat[j] else dim.bounds,
                 )
+                ax_.axvline(
+                    minimum[index], linestyle="--", color=minima_color, lw=1
+                )
 
             # lower triangle
             elif i > j:
                 index_i, dim_i = plot_dims[i]
                 index_j, dim_j = plot_dims[j]
                 ax_ = ax[i, j]
-                ax_.scatter(
+                cbar = ax_.scatter(
                     samples[:, index_j],
                     samples[:, index_i],
                     c=order,
@@ -147,6 +152,11 @@ def plot_evaluations(
     if truths:
         ax = _add_truths(ax, truths, truth_color)
     ax = _add_legend(ax, minima_color, truths, truth_color)
+
+    # add cbar above last ax
+    if cbar:
+        cax = fig.colorbar(cbar, ax=ax[0, 1:], shrink=0.8, orientation='horizontal', location='top',)
+        cax.set_label('Acquisition Order')
 
     fig = _get_fig(ax)
     return fig, ax
