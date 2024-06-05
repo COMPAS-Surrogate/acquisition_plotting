@@ -32,7 +32,7 @@ from .utils import (
     _get_dim_names,
     _get_fig,
     _map_categories,
-    _add_legend
+    _add_legend_to_grid
 )
 
 
@@ -49,6 +49,7 @@ def plot_objective(
         truths: List = None,
         truth_color: str = "tab:orange",
         minima_color: str = "tab:red",
+        standardise_zscale=False,
         **kwargs,
 ) -> Tuple[plt.Figure, plt.Axes]:
     """Plot a 2-d matrix with so-called Partial Dependence plots
@@ -186,6 +187,9 @@ def plot_objective(
             " not '%s'." % zscale
         )
 
+    if not standardise_zscale:
+        zvmin, zvmin = None, None
+
     fig, ax = plt.subplots(
         n_dims, n_dims, figsize=(size * n_dims, size * n_dims)
     )
@@ -246,11 +250,14 @@ def plot_objective(
 
     # Make various adjustments to the plots.
     ax = _format_scatter_plot_axes(ax, plot_dims, dim_labels)
+
+    legend_labels = {"Observed Min":minima_color}
     if truths:
         ax = _add_truths(ax, truths, truth_color)
+        legend_labels.update({"Injection":truth_color})
 
     # Custom legend for the plot.
-    ax = _add_legend(ax, minima_color, truths, truth_color)
+    ax = _add_legend_to_grid(ax, legend_labels)
     fig = _get_fig(ax)
 
     # add cbar above last ax

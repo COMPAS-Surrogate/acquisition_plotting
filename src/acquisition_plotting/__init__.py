@@ -15,3 +15,7 @@ __contributors__ = f"{URL}/graphs/contributors"
 from .plot_evaluations import plot_evaluations
 from .plot_objective import plot_objective
 from .trieste import plot_trieste_evaluations, plot_trieste_objective
+from .plot_bo_metrics import plot_bo_metrics
+from .plot_lnl_hist import plot_lnl_hist
+from .plot_overlaid_corner import plot_overlaid_corner
+from .make_gif import make_gif

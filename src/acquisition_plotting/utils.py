@@ -295,13 +295,8 @@ def _get_dim_names(space) -> List[Tuple[int, str]]:
     return plot_dims
 
 
-def _add_legend(ax, minima_color, truths, truth_color):
-    # create custom legend for minima and truths
-    handles = [Patch(facecolor=minima_color, label="Min Acquired Pt")]
-    if truths:
-        handles.append(Patch(facecolor=truth_color, label="Truth"))
-
-    # pad the legend up slightly
+def _add_legend_to_grid(ax:np.ndarray, legend_labels:Dict[str,str]):
+    handles = [Patch(facecolor=c, label=l) for l, c in legend_labels.items()]
     ax[0, -1].legend(
         handles=handles,
         loc="lower left",
@@ -309,3 +304,5 @@ def _add_legend(ax, minima_color, truths, truth_color):
         bbox_to_anchor=(0, 0.1),
     )
     return ax
+
+

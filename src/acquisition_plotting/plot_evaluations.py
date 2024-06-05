@@ -31,7 +31,7 @@ from .utils import (
     _format_scatter_plot_axes,
     _get_dim_names,
     _map_categories,
-_add_legend
+    _add_legend_to_grid
 )
 
 
@@ -149,9 +149,11 @@ def plot_evaluations(
 
     # make adjustments to the plot
     ax = _format_scatter_plot_axes(ax, plot_dims, dim_labels)
+    legend_labels = {"Observed Minima": minima_color}
     if truths:
         ax = _add_truths(ax, truths, truth_color)
-    ax = _add_legend(ax, minima_color, truths, truth_color)
+        legend_labels["Injection"] = truth_color
+    ax = _add_legend_to_grid(ax, legend_labels)
 
     # add cbar above last ax
     if cbar:
