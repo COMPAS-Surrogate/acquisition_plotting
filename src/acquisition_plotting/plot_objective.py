@@ -179,6 +179,7 @@ def plot_objective(
         locator = LogLocator()
         zvmin = np.nanmin(np.log(result.func_vals))
         zvmax = np.nanmax(np.log(result.func_vals))
+
     elif zscale == "linear":
         locator = None
     else:
@@ -187,8 +188,12 @@ def plot_objective(
             " not '%s'." % zscale
         )
 
+    if zvmin == zvmax:
+        standardise_zscale = False
+
+    zscale_kwgs = dict(vmin=zvmin, vmax=zvmax)
     if not standardise_zscale:
-        zvmin, zvmin = None, None
+        zscale_kwgs = {}
 
     fig, ax = plt.subplots(
         n_dims, n_dims, figsize=(size * n_dims, size * n_dims)
@@ -229,7 +234,7 @@ def plot_objective(
                 cbar = ax_.contourf(
                     xi, yi, zi, levels,
                     locator=locator, cmap=cmap,
-                    vmin=zvmin, vmax=zvmax
+                    **zscale_kwgs
                 )
                 if show_points:
                     ax_.scatter(
