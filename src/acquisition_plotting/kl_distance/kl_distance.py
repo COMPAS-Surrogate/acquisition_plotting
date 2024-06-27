@@ -6,24 +6,25 @@ from collections import namedtuple
 
 STATS = namedtuple('STATS', ['js', 'ks', 'kl'])
 
+__all__ = ['compute_statistics']
 
-def compute_js_divergence(p, q):
+def _compute_js_divergence(p, q):
     m = 0.5 * (p + q)
     return 0.5 * (entropy(p, m) + entropy(q, m))
 
-def kde_sklearn(x, x_grid, bandwidth=0.2):
+def _kde_sklearn(x, x_grid, bandwidth=0.2):
     kde = KernelDensity(bandwidth=bandwidth).fit(x[:, None])
     return np.exp(kde.score_samples(x_grid[:, None]))
 
 
-def compute_statistics(res1_posterior, res2_posterior, use_kde=False, bandwidth=0.2, bins=100):
+def compute_statistics(res1_posterior:pd.DataFrame, res2_posterior:pd.DataFrame, use_kde=False, bandwidth=0.2, bins=100):
     assert res1_posterior.shape[1] == res2_posterior.shape[1], "Dimensions of posteriors do not match."
     js_divs, ks_stats, kl_divs = [], [], []
     for col in res1_posterior.columns:
         p, q = res1_posterior[col].values, res2_posterior[col].values
         x_grid = np.linspace(min(p.min(), q.min()), max(p.max(), q.max()), 1000)
         if use_kde:
-            p_density, q_density = kde_sklearn(p, x_grid, bandwidth), kde_sklearn(q, x_grid, bandwidth)
+            p_density, q_density = _kde_sklearn(p, x_grid, bandwidth), _kde_sklearn(q, x_grid, bandwidth)
         else:
             # make p + q the same number of samples (the minimum of the two)
             min_len = min(len(p), len(q))
@@ -34,7 +35,7 @@ def compute_statistics(res1_posterior, res2_posterior, use_kde=False, bandwidth=
         q_density += 1e-10
         p_density /= p_density.sum()
         q_density /= q_density.sum()
-        js_divs.append(compute_js_divergence(p_density, q_density))
+        js_divs.append(_compute_js_divergence(p_density, q_density))
         ks_stats.append(ks_2samp(p, q)[0])
         kl_divs.append(entropy(p_density, q_density))
     return STATS(np.mean(js_divs), np.mean(ks_stats), np.mean(kl_divs))

@@ -34,7 +34,7 @@ def plot_trieste_objective(
     kwgs["n_samples"] = kwgs.get("n_samples", 50)
     kwgs["levels"] = kwgs.get("levels", 10)
     kwgs["zscale"] = kwgs.get("zscale", "linear")
-    kwgs['reference_params'] = kwgs.get('reference_params', true_vals)
+    kwgs['reference_param'] = kwgs.get('reference_param', true_vals)
 
     fig, _ = plot_objective(
         res,

@@ -141,18 +141,3 @@ def plot_smoothed_metrics(metric='kl'):
     plt.tight_layout()
     axs.set_ylim(bottom=0)
     fig.savefig(f"{metric}.png")
-
-
-get_kls_for_entire_result_dir(base_dir)
-df = load_all_kl_datasets(base_dir)
-pre_process_all_kl_data(df, metric='kl')
-plot_smoothed_metrics(metric='kl')
-
-# plot_smoothed_metrics(df)
-#
-#
-# get_kls_for_entire_result_dir(base_dir="/fred/oz303/avajpeyi/studies/cosmic_int/simulation_study/4dim/out_pp_8/")
-#
-#
-#
-#
