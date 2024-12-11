@@ -20,9 +20,8 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.9'
           cache: 'pip' # Enable caching for pip dependencies
@@ -30,22 +29,15 @@ jobs:
 
       - name: Semantic Version Release
         id: release
+        # Adjust tag with desired version if applicable.
         uses: python-semantic-release/python-semantic-release@v9.12.0
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           git_committer_name: "github-actions"
           git_committer_email: "actions@users.noreply.github.com"
 
-      - name: Publish to PyPI
+
+      - name: pypi-publish
         uses: pypa/gh-action-pypi-publish@v1.12.3
-        if: steps.release.outputs.released == 'true'
 
 
-      - name: Upload to GitHub Release
-        uses: python-semantic-release/upload-to-gh-release@v1
-        if: steps.release.outputs.released == 'true'
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.release.outputs.tag }}
