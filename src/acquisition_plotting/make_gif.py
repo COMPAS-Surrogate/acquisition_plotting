@@ -2,6 +2,7 @@ import glob
 import os
 import re
 import warnings
+
 from PIL import Image
 
 __all__ = ["make_gif"]

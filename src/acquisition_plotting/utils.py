@@ -260,6 +260,7 @@ def _get_ylim_diagonal(ax):
 
     return ylim_min, ylim_max
 
+
 def _add_truths(ax, truths: List, color: str = "tab:orange"):
     n_dims = len(truths)
 
@@ -295,7 +296,7 @@ def _get_dim_names(space) -> List[Tuple[int, str]]:
     return plot_dims
 
 
-def _add_legend_to_grid(ax:np.ndarray, legend_labels:Dict[str,str]):
+def _add_legend_to_grid(ax: np.ndarray, legend_labels: Dict[str, str]):
     handles = [Patch(facecolor=c, label=l) for l, c in legend_labels.items()]
     ax[0, -1].legend(
         handles=handles,
@@ -304,5 +305,3 @@ def _add_legend_to_grid(ax:np.ndarray, legend_labels:Dict[str,str]):
         bbox_to_anchor=(0, 0.1),
     )
     return ax
-
-

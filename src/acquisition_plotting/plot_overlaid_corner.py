@@ -1,4 +1,5 @@
 """Help plot overlaid corners"""
+
 import warnings
 from typing import Dict, List, Union
 
@@ -35,13 +36,13 @@ CORNER_KWARGS = dict(
 
 
 def plot_overlaid_corner(
-        samples_list: List[pd.DataFrame],
-        sample_labels: List[str],
-        axis_labels: List[str] = None,
-        colors: List[str] = None,
-        fname: str = "corner.png",
-        truths: Union[Dict[str, float], List[float]] = None,
-        annotate:str = "",
+    samples_list: List[pd.DataFrame],
+    sample_labels: List[str],
+    axis_labels: List[str] = None,
+    colors: List[str] = None,
+    fname: str = "corner.png",
+    truths: Union[Dict[str, float], List[float]] = None,
+    annotate: str = "",
 ):
     """Plots multiple corners on top of each other"""
     # get some constants
@@ -56,9 +57,11 @@ def plot_overlaid_corner(
 
     # make the samples the same len --> min_len
     samples_list = [
-        samples.sample(n=min_len, replace=False)
-        if len(samples) > min_len
-        else samples
+        (
+            samples.sample(n=min_len, replace=False)
+            if len(samples) > min_len
+            else samples
+        )
         for samples in samples_list
     ]
 
@@ -85,7 +88,13 @@ def plot_overlaid_corner(
     for idx in range(1, n):
         s = samples_list[idx].values
         if dims == 1:
-            fig.gca().hist(s, bins=BINS1D, color=colors[idx], histtype="step", label=sample_labels[idx])
+            fig.gca().hist(
+                s,
+                bins=BINS1D,
+                color=colors[idx],
+                histtype="step",
+                label=sample_labels[idx],
+            )
             fig.legend()
         else:
             fig = corner.corner(
@@ -104,7 +113,11 @@ def plot_overlaid_corner(
         axes, _ = _get_fig_axes(fig, dims)
         # annotate at bottom left corner of ax[0,-1]
         axes[0, -1].text(
-            0.1, 0.9, annotate, ha="left", va="bottom",
+            0.1,
+            0.9,
+            annotate,
+            ha="left",
+            va="bottom",
             transform=axes[0, -1].transAxes,
         )
 
@@ -118,9 +131,9 @@ def _get_data_ranges(data: pd.DataFrame) -> List[List[float]]:
 
 
 def get_axes_ranges(
-        samples_list: List[pd.DataFrame],
-        truths: List[float] = {},
-        truth_thres=0.1,
+    samples_list: List[pd.DataFrame],
+    truths: List[float] = {},
+    truth_thres=0.1,
 ) -> List[List[float]]:
     """Get the ranges of the data"""
     ranges = [_get_data_ranges(samples) for samples in samples_list]

@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-
 def _distances_between_consecutive_points(points: np.ndarray) -> np.ndarray:
     """Compute the distances between consecutive y_pts."""
     dist = np.linalg.norm(points[1:] - points[:-1], axis=1)

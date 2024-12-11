@@ -26,31 +26,31 @@ from matplotlib.ticker import (  # noqa: E402
 )
 
 from .utils import (
+    _add_legend_to_grid,
     _add_truths,
     _evenly_sample,
     _format_scatter_plot_axes,
     _get_dim_names,
     _get_fig,
     _map_categories,
-    _add_legend_to_grid
 )
 
 
 def plot_objective(
-        result: OptimizeResult,
-        levels=10,
-        n_points=40,
-        n_samples=250,
-        size=2,
-        zscale="linear",
-        dim_labels=None,
-        show_points=True,
-        cmap="viridis_r",
-        truths: List = None,
-        truth_color: str = "tab:orange",
-        minima_color: str = "tab:red",
-        standardise_zscale=False,
-        **kwargs,
+    result: OptimizeResult,
+    levels=10,
+    n_points=40,
+    n_samples=250,
+    size=2,
+    zscale="linear",
+    dim_labels=None,
+    show_points=True,
+    cmap="viridis_r",
+    truths: List = None,
+    truth_color: str = "tab:orange",
+    minima_color: str = "tab:red",
+    standardise_zscale=False,
+    **kwargs,
 ) -> Tuple[plt.Figure, plt.Axes]:
     """Plot a 2-d matrix with so-called Partial Dependence plots
         of the objective function. This shows the influence of each
@@ -174,7 +174,6 @@ def plot_objective(
     x_samples, minimum, _ = _map_categories(space, result.x_iters, x_vals)
     zvmin, zvmax = result.func_vals.min(), result.func_vals.max()
 
-
     if zscale == "log":
         locator = LogLocator()
         zvmin = np.nanmin(np.log(result.func_vals))
@@ -205,7 +204,7 @@ def plot_objective(
     cbar = None
     for i in range(n_dims):
         for j in range(n_dims):
-            if i == j: # diagonal
+            if i == j:  # diagonal
                 index, dim = plot_dims[i]
                 xi, yi = _partial_dependence_1D(
                     space,
@@ -232,9 +231,13 @@ def plot_objective(
                     space, result.models[-1], index1, index2, samples, n_points
                 )
                 cbar = ax_.contourf(
-                    xi, yi, zi, levels,
-                    locator=locator, cmap=cmap,
-                    **zscale_kwgs
+                    xi,
+                    yi,
+                    zi,
+                    levels,
+                    locator=locator,
+                    cmap=cmap,
+                    **zscale_kwgs,
                 )
                 if show_points:
                     ax_.scatter(
@@ -256,10 +259,10 @@ def plot_objective(
     # Make various adjustments to the plots.
     ax = _format_scatter_plot_axes(ax, plot_dims, dim_labels)
 
-    legend_labels = {"Observed Min":minima_color}
+    legend_labels = {"Observed Min": minima_color}
     if truths:
         ax = _add_truths(ax, truths, truth_color)
-        legend_labels.update({"Injection":truth_color})
+        legend_labels.update({"Injection": truth_color})
 
     # Custom legend for the plot.
     ax = _add_legend_to_grid(ax, legend_labels)
@@ -267,10 +270,14 @@ def plot_objective(
 
     # add cbar above last ax
     if cbar:
-        cax = fig.colorbar(cbar, ax=ax[0, 1:], shrink=0.8, orientation='horizontal', location='top',)
-        cax.set_label('Surrogate Model Mean')
-
-
+        cax = fig.colorbar(
+            cbar,
+            ax=ax[0, 1:],
+            shrink=0.8,
+            orientation="horizontal",
+            location="top",
+        )
+        cax.set_label("Surrogate Model Mean")
 
     return fig, ax
 
@@ -340,7 +347,7 @@ def _partial_dependence_1D(space, model, i, samples, n_points=40):
         rvs_ = np.array(samples)  # copy
         # We replace the values in the dimension that we want to keep
         # fixed
-        rvs_[:, dim_locs[i]: dim_locs[i + 1]] = x
+        rvs_[:, dim_locs[i] : dim_locs[i + 1]] = x
         # In case of `x_eval=None` rvs conists of random samples.
         # Calculating the mean of these samples is how partial dependence
         # is implemented.
@@ -421,8 +428,8 @@ def _partial_dependence_2D(space, model, i, j, samples, n_points=40):
         and then averaging over all samples.
         """
         rvs_ = np.array(samples)  # copy
-        rvs_[:, dim_locs[j]: dim_locs[j + 1]] = x
-        rvs_[:, dim_locs[i]: dim_locs[i + 1]] = y
+        rvs_[:, dim_locs[j] : dim_locs[j + 1]] = x
+        rvs_[:, dim_locs[i] : dim_locs[i + 1]] = y
         return np.mean(model.predict(rvs_))
 
     xi, xi_transformed = _evenly_sample(space.dimensions[j], n_points)

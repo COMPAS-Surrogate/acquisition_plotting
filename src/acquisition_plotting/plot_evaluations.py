@@ -27,11 +27,11 @@ from matplotlib.ticker import (  # noqa: E402
 )
 
 from .utils import (
+    _add_legend_to_grid,
     _add_truths,
     _format_scatter_plot_axes,
     _get_dim_names,
     _map_categories,
-    _add_legend_to_grid
 )
 
 
@@ -157,8 +157,14 @@ def plot_evaluations(
 
     # add cbar above last ax
     if cbar:
-        cax = fig.colorbar(cbar, ax=ax[0, 1:], shrink=0.8, orientation='horizontal', location='top',)
-        cax.set_label('Acquisition Order')
+        cax = fig.colorbar(
+            cbar,
+            ax=ax[0, 1:],
+            shrink=0.8,
+            orientation="horizontal",
+            location="top",
+        )
+        cax.set_label("Acquisition Order")
 
     fig = _get_fig(ax)
     return fig, ax

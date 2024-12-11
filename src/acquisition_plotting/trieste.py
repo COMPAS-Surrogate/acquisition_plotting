@@ -34,7 +34,7 @@ def plot_trieste_objective(
     kwgs["n_samples"] = kwgs.get("n_samples", 50)
     kwgs["levels"] = kwgs.get("levels", 10)
     kwgs["zscale"] = kwgs.get("zscale", "linear")
-    kwgs['reference_param'] = kwgs.get('reference_param', true_vals)
+    kwgs["reference_param"] = kwgs.get("reference_param", true_vals)
 
     fig, _ = plot_objective(
         res,
@@ -45,7 +45,13 @@ def plot_trieste_objective(
 
 
 def plot_trieste_evaluations(
-    in_pts, out_pts, trieste_model, trieste_space, truths: Dict = None, dim_labels=None, **kwargs
+    in_pts,
+    out_pts,
+    trieste_model,
+    trieste_space,
+    truths: Dict = None,
+    dim_labels=None,
+    **kwargs,
 ) -> plt.Figure:
     """
     Plot the evaluation matrix --> a corner plot of the parameters,
@@ -56,7 +62,9 @@ def plot_trieste_evaluations(
     res = _trieste_to_scipy_res(
         in_pts, out_pts, trieste_space, trieste_model, labels
     )
-    fig, _ = plot_evaluations(res, truths=true_vals, dim_labels=dim_labels, **kwargs)
+    fig, _ = plot_evaluations(
+        res, truths=true_vals, dim_labels=dim_labels, **kwargs
+    )
     return fig
 
 

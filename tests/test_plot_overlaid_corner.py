@@ -42,4 +42,3 @@ def test_overlaid_corner(tmpdir):
         truths=[0.1, 0.1],
         annotate="NumPts 10",
     )
-
