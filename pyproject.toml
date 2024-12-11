@@ -57,10 +57,9 @@ version_variable = "src/acquisition_plotting/_version.py:__version__"
 version_source = "commit"
 commit_version_number = true
 commit_subject = "chore(release): {version}"
-commit_message = "chore(release): {version}\n\n{changelog}"
+commit_message = "chore(release): {version}"
 tag_format = "v{version}"
 no_local_version = true
-changelog_file = "CHANGELOG.md"
 
 [tool.black]
 line-length = 79
