@@ -1,11 +1,22 @@
 # CHANGELOG
 
 
+## v0.1.3 (2024-12-11)
+
+### Bug Fixes
+
+* fix: add badge to readme ([`c90b15d`](https://github.com/COMPAS-Surrogate/acquisition_plotting/commit/c90b15dc143e2666963af2d66d7444c7b7e4debe))
+
+
 ## v0.1.2 (2024-12-11)
 
 ### Bug Fixes
 
 * fix: workflow-release run only after tests ([`6451f37`](https://github.com/COMPAS-Surrogate/acquisition_plotting/commit/6451f37781e47c015e6c6bfe22692ddbb79dba32))
+
+### Chores
+
+* chore(release): 0.1.2 ([`af8e3f7`](https://github.com/COMPAS-Surrogate/acquisition_plotting/commit/af8e3f75701691426cbe6b6398b0b3b3c09c2370))
 
 ### Unknown
 
