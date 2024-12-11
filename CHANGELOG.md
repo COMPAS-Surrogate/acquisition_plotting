@@ -5,6 +5,9 @@
 
 ### Bug Fixes
 
+- Changelog
+  ([`d1f08d5`](https://github.com/COMPAS-Surrogate/acquisition_plotting/commit/d1f08d5d3aef71e0ae1b1eedd0d40171c977a17c))
+
 - Readme lint
   ([`c408356`](https://github.com/COMPAS-Surrogate/acquisition_plotting/commit/c40835643bc08b2888f966c4415e9e066c2b8046))
 
