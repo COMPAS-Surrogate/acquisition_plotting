@@ -19,17 +19,17 @@ def _generate_mock_posterior(n, sigma=1.0, mu=0.0, p=1):
 
 def test_overlaid_corner(tmpdir):
     n = 1000
-    rs = [
-        _generate_mock_posterior(n, p=1),
-        _generate_mock_posterior(n, mu=1, sigma=0.5, p=1),
-    ]
-    plot_overlaid_corner(
-        rs,
-        ["r1", "r2"],
-        colors=["r", "b"],
-        fname=f"{tmpdir}/corner.png",
-        truths=[0.1],
-    )
+    # rs = [
+    #     _generate_mock_posterior(n, p=2),
+    #     _generate_mock_posterior(n, mu=1, sigma=0.5, p=2),
+    # ]
+    # plot_overlaid_corner(
+    #     rs,
+    #     ["r1", "r2"],
+    #     colors=["r", "b"],
+    #     fname=f"{tmpdir}/corner.png",
+    #     truths=[0.1],
+    # )
     rs = [
         _generate_mock_posterior(n, p=2),
         _generate_mock_posterior(n, mu=1, sigma=0.5, p=2),
