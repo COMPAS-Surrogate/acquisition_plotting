@@ -4,10 +4,14 @@ on:
   push:
     branches:
       - main
+  workflow_run:
+    workflows: ['Install and Pytest']
+    types:
+      - completed
+
 
 jobs:
   release:
-    needs:
     runs-on: ubuntu-latest
     concurrency: release
     permissions:
