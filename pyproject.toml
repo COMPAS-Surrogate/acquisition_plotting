@@ -24,6 +24,7 @@ dependencies = [
     "pandas",
     "corner",
     "tqdm",
+    "bilby",
 ]
 
 [project.optional-dependencies]
