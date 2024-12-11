@@ -59,6 +59,7 @@ commit_version_number = true
 commit_subject = "chore(release): {version}"
 commit_message = "chore(release): {version}\n\n{changelog}"
 tag_format = "v{version}"
+no_local_version = true
 
 [tool.black]
 line-length = 79
