@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
-          ref: ${{ github.sha }}
+          ref: main       # Replace with your branch
 
       - uses: actions/setup-python@v5
         with:
