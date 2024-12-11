@@ -1,9 +1,22 @@
 # CHANGELOG
 
 
+## v0.1.2 (2024-12-11)
+
+### Bug Fixes
+
+* fix: workflow-release run only after tests ([`6451f37`](https://github.com/COMPAS-Surrogate/acquisition_plotting/commit/6451f37781e47c015e6c6bfe22692ddbb79dba32))
+
+### Unknown
+
+* Merge branch 'main' of github.com:COMPAS-Surrogate/acquisition_plotting into main ([`913da4f`](https://github.com/COMPAS-Surrogate/acquisition_plotting/commit/913da4f11aa5dfd6da65dc0e3c489d0183ec230e))
+
+
 ## v0.1.1 (2024-12-11)
 
 ### Bug Fixes
+
+* fix: update readme ([`d7875d7`](https://github.com/COMPAS-Surrogate/acquisition_plotting/commit/d7875d7e0edd7392dd3ab3e9abeb909094d6d5bd))
 
 * fix: pyrpoj changelog ([`12d4fa4`](https://github.com/COMPAS-Surrogate/acquisition_plotting/commit/12d4fa4de09b7d0b1066d07ced5b1a25c4bf45cd))
 
@@ -12,6 +25,8 @@
 * fix: readme lint ([`c408356`](https://github.com/COMPAS-Surrogate/acquisition_plotting/commit/c40835643bc08b2888f966c4415e9e066c2b8046))
 
 ### Chores
+
+* chore(release): 0.1.1 ([`c699235`](https://github.com/COMPAS-Surrogate/acquisition_plotting/commit/c69923589cf666a5cec762d780d6972e4547ac3c))
 
 * chore(release): 0.1.1 ([`1e8b7a5`](https://github.com/COMPAS-Surrogate/acquisition_plotting/commit/1e8b7a523113be2974e32958f77f6cf8c804c2ea))
 
