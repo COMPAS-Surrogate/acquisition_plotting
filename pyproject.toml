@@ -1,26 +1,15 @@
-[train-system]
-requires = [
-    "setuptools>=64",
-    "setuptools-scm>=8.0",
-    "wheel"
-]
-train-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-where = ["src"]  # list of folders that contain the packages (["."] by default)
-include = ["acquisition_plotting*"]  # package names should match these glob patterns (["*"] by default)
-exclude = ["acquisition_plotting.tests*"]  # exclude packages matching these glob patterns (empty by default)
-namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
-
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "acquisition_plotting"
-dynamic = ["version"] # scm versioning (using tags)
-requires-python = ">=3.8"
+name = "compas_surrogate.acquisition_plotting"
+dynamic = ["version"]
 description = "Plotting utils"
 readme = "README.md"
+requires-python = ">=3.8"
 authors = [
-    {name = "Avi Vajpeyi", email = "avi.vajpeyi@gmail.com" },
+    {name = "Avi Vajpeyi", email = "avi.vajpeyi@gmail.com"},
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -48,16 +37,27 @@ dev = [
     "jupyter-book",
 ]
 
-[tool.setuptools_scm]
-version_file = "src/acquisition_plotting/_version.py"
-
-
-[project.urls]  # Optional
+[project.urls]
 "Homepage" = "https://github.com/COMPAS-Surrogate/acquisition_plotting"
 "Bug Reports" = "https://github.com/COMPAS-Surrogate/acquisition_plotting/issues"
 "Source" = "https://github.com/COMPAS-Surrogate/acquisition_plotting/"
 
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["acquisition_plotting*"]
+exclude = ["acquisition_plotting.tests*"]
+namespaces = false
 
+[tool.setuptools_scm]
+version_file = "src/acquisition_plotting/_version.py"
+
+[tool.semantic_release]
+version_variable = "src/acquisition_plotting/_version.py:__version__"
+version_source = "commit"
+commit_version_number = true
+commit_subject = "chore(release): {version}"
+commit_message = "chore(release): {version}\n\n{changelog}"
+tag_format = "v{version}"
 
 [tool.black]
 line-length = 79
@@ -71,7 +71,7 @@ exclude = '''
   | \.venv
   | _build
   | buck-out
-  | train
+  | build
   | dist
 )/
 '''
@@ -80,12 +80,5 @@ exclude = '''
 profile = "black"
 line_length = 79
 
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-
-## CLI script
-#[project.scripts]
-#train_acquisition_plotting = "acquisition_plotting.cli:cli_train"
-#plot_kl_distances = "acquisition_plotting.cli:cli_plot_kl_distances"
-#build_surrogate = "acquisition_plotting.cli:cli_build_surrogate"
