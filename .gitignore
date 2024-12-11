@@ -155,3 +155,4 @@ cython_debug/
 
 # PyCharm
 .idea/
+/src/acquisition_plotting/_version.py
