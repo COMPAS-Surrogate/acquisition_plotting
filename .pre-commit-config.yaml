@@ -1,8 +1,8 @@
 # file: .pre-commit-config.yaml
 #
 repos:
--   repo: https://github.com/ambv/black
-    rev: 22.3.0
+-   repo: https://github.com/psf/black
+    rev: 24.10.0
     hooks:
     - id: black
 -   repo: https://github.com/pre-commit/pre-commit-hooks
@@ -11,7 +11,7 @@ repos:
     - id: flake8
     - id: requirements-txt-fixer
     - id: trailing-whitespace
--   repo: https://github.com/pre-commit/mirrors-isort
-    rev: v5.10.1
+-   repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
     hooks:
     - id: isort
