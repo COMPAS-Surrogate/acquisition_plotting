@@ -835,7 +835,7 @@ class Categorical(Dimension):
         if isinstance(choices, numbers.Integral):
             return self.categories[choices]
         elif self.transform_ == "normalize" and isinstance(choices, float):
-            return self.inverse_transform([(choices)])
+            return self.inverse_transform([choices])
         elif self.transform_ == "normalize":
             return self.inverse_transform(list(choices))
         else:
